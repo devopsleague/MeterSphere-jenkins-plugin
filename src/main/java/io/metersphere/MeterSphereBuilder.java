@@ -32,6 +32,7 @@ import java.util.Optional;
 public class MeterSphereBuilder extends Builder implements SimpleBuildStep, Serializable {
 
     private static final String LOG_PREFIX = "[MeterSphere] ";
+    private MeterSphereUtils meterSphereUtils;
 
     private final String msEndpoint;
     private final String msAccessKey;
@@ -62,7 +63,9 @@ public class MeterSphereBuilder extends Builder implements SimpleBuildStep, Seri
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
                         @Nonnull TaskListener listener) throws InterruptedException, IOException {
-        MeterSphereUtils.logger = listener.getLogger();
+        // 初始化日志
+        this.meterSphereUtils = new MeterSphereUtils(listener.getLogger());
+
         listener.getLogger().println("workspace=" + workspace);
         listener.getLogger().println("number=" + run.getNumber());
         listener.getLogger().println("url=" + run.getUrl());
@@ -96,7 +99,7 @@ public class MeterSphereBuilder extends Builder implements SimpleBuildStep, Seri
             boolean result = false;
             switch (method) {
                 case Method.TEST_PLAN:
-                    result = MeterSphereUtils.runTestPlan(run, client, realProjectId, mode, testPlanId, resourcePoolId, openMode);
+                    result = meterSphereUtils.runTestPlan(run, client, realProjectId, mode, testPlanId, resourcePoolId, openMode);
                     break;
                 case Method.TEST_PLAN_NAME:
                     String testPlanName = Util.replaceMacro(this.testPlanName, environment);
@@ -111,7 +114,7 @@ public class MeterSphereBuilder extends Builder implements SimpleBuildStep, Seri
                         run.setResult(Result.FAILURE);
                         return;
                     }
-                    result = MeterSphereUtils.runTestPlan(run, client, realProjectId, mode, first.get().getId(), resourcePoolId, openMode);
+                    result = meterSphereUtils.runTestPlan(run, client, realProjectId, mode, first.get().getId(), resourcePoolId, openMode);
                     break;
                 case Method.SINGLE:
                     testCases = client.getTestCases(realProjectId);//项目下
@@ -123,7 +126,7 @@ public class MeterSphereBuilder extends Builder implements SimpleBuildStep, Seri
                         run.setResult(Result.FAILURE);
                         return;
                     }
-                    result = MeterSphereUtils.getTestStepsBySingle(client, realProjectId, firstCase.get(), testPlanId, resourcePoolId, openMode);
+                    result = meterSphereUtils.getTestStepsBySingle(client, realProjectId, firstCase.get(), testPlanId, resourcePoolId, openMode);
                     break;
                 case Method.SINGLE_NAME:
                     String testCaseName = Util.replaceMacro(this.testCaseName, environment);
@@ -138,7 +141,7 @@ public class MeterSphereBuilder extends Builder implements SimpleBuildStep, Seri
                         run.setResult(Result.FAILURE);
                         return;
                     }
-                    result = MeterSphereUtils.getTestStepsBySingle(client, realProjectId, firstCase.get(), testPlanId, resourcePoolId, openMode);
+                    result = meterSphereUtils.getTestStepsBySingle(client, realProjectId, firstCase.get(), testPlanId, resourcePoolId, openMode);
                     break;
                 default:
                     run.setResult(Result.FAILURE);
@@ -425,7 +428,7 @@ public class MeterSphereBuilder extends Builder implements SimpleBuildStep, Seri
 
 
     private void log(String msg) {
-        MeterSphereUtils.logger.println(LOG_PREFIX + msg);
+        meterSphereUtils.log(LOG_PREFIX + msg);
     }
 
     @DataBoundSetter

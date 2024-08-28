@@ -16,14 +16,19 @@ import java.util.List;
 import java.util.Map;
 
 public class MeterSphereUtils {
-    public static PrintStream logger;
+    private PrintStream logger;
     private static final String LOG_PREFIX = "[MeterSphere，代码测试]";
 
-    private static void log(String msg) {
+
+    public MeterSphereUtils(PrintStream logger) {
+        this.logger = logger;
+    }
+
+    public void log(String msg) {
         logger.println(LOG_PREFIX + msg);
     }
 
-    public static boolean runUiTest(MeterSphereClient meterSphereClient, TestCaseDTO c, String openMode) {
+    public boolean runUiTest(MeterSphereClient meterSphereClient, TestCaseDTO c, String openMode) {
         String url = meterSphereClient.getBaseInfo();
         boolean flag = true;
         String result = "";
@@ -67,7 +72,7 @@ public class MeterSphereUtils {
         return flag;
     }
 
-    public static boolean runPerformTest(MeterSphereClient meterSphereClient, TestCaseDTO c, String testPlanId, String openMode) {
+    public boolean runPerformTest(MeterSphereClient meterSphereClient, TestCaseDTO c, String testPlanId, String openMode) {
         String url = meterSphereClient.getBaseInfo();
         String reportId = "";
         boolean flag = true;
@@ -114,7 +119,7 @@ public class MeterSphereUtils {
         return flag;
     }
 
-    public static boolean runScenario(MeterSphereClient meterSphereClient, TestCaseDTO c, String projectId, String runMode, String resourcePoolId, String openMode) {
+    public boolean runScenario(MeterSphereClient meterSphereClient, TestCaseDTO c, String projectId, String runMode, String resourcePoolId, String openMode) {
         String url = meterSphereClient.getBaseInfo();
         boolean flag = true;
         String reportId = null;
@@ -164,7 +169,7 @@ public class MeterSphereUtils {
         return flag;
     }
 
-    public static boolean runDefinition(MeterSphereClient meterSphereClient, TestCaseDTO c, String testPlanId, String runMode) {
+    public boolean runDefinition(MeterSphereClient meterSphereClient, TestCaseDTO c, String testPlanId, String runMode) {
         boolean flag = true;
         String id = c.getId();
         try {
@@ -198,8 +203,8 @@ public class MeterSphereUtils {
         return flag;
     }
 
-    public static boolean runTestPlan(Run<?, ?> run, MeterSphereClient meterSphereClient, String projectId,
-                                      String mode, String testPlanId, String resourcePoolId, String openMode) throws InterruptedException {
+    public boolean runTestPlan(Run<?, ?> run, MeterSphereClient meterSphereClient, String projectId,
+                               String mode, String testPlanId, String resourcePoolId, String openMode) throws InterruptedException {
         log("测试计划开始执行");
         String id = meterSphereClient.exeTestPlan(projectId, testPlanId, mode, resourcePoolId);
         log("生成测试报告id:" + id);
@@ -233,26 +238,26 @@ public class MeterSphereUtils {
         return flag;
     }
 
-    public static boolean getTestStepsBySingle(MeterSphereClient meterSphereClient, String projectId, TestCaseDTO testCase,
-                                               String testPlanId, String resourcePoolId, String openMode) {
+    public boolean getTestStepsBySingle(MeterSphereClient meterSphereClient, String projectId, TestCaseDTO testCase,
+                                        String testPlanId, String resourcePoolId, String openMode) {
         log("测试ID: " + testCase.getId());
         log("测试名称: " + testCase.getName() + " [" + testCase.getType() + "]" + " [" + testCase.getVersionName() + "]");
         boolean flag = true;
         switch (testCase.getType()) {
             case Results.PERFORMANCE:
             case Results.LOAD_TEST:
-                flag = MeterSphereUtils.runPerformTest(meterSphereClient, testCase, "", openMode);
+                flag = runPerformTest(meterSphereClient, testCase, "", openMode);
                 break;
             case Results.SCENARIO:
             case Results.API_SCENARIO:
-                flag = MeterSphereUtils.runScenario(meterSphereClient, testCase, projectId, "scenario", resourcePoolId, openMode);
+                flag = runScenario(meterSphereClient, testCase, projectId, "scenario", resourcePoolId, openMode);
                 break;
             case Results.DEFINITION:
             case Results.API_CASE:
-                flag = MeterSphereUtils.runDefinition(meterSphereClient, testCase, testPlanId, "JENKINS");
+                flag = runDefinition(meterSphereClient, testCase, testPlanId, "JENKINS");
                 break;
             case Results.UI:
-                flag = MeterSphereUtils.runUiTest(meterSphereClient, testCase, openMode);
+                flag = runUiTest(meterSphereClient, testCase, openMode);
                 break;
             default:
                 break;
